@@ -52,7 +52,7 @@ CREATE TABLE orders (
     customer_id text,
     order_status text,
     order_purchase_timestamp timestamp without time zone,
-    order_approved_at text,
+    order_approved_at timestamp without time zone,
     order_delivered_carrier_date timestamp without time zone,
     order_delivered_customer_date timestamp without time zone,
     order_estimated_delivery_date timestamp without time zone
