@@ -124,16 +124,17 @@ def match_local_query(user_q: str, benchmark_items, preds_map):
 
 def generate_query_hybrid(user_q: str, benchmark_items, preds_map):
     api_key = os.getenv("OPENAI_API_KEY", "").strip()
-    base_url = os.getenv("OPENAI_BASE_URL", "https://freemodel.in/v1")
+    base_url = os.getenv("OPENAI_BASE_URL", "https://api.groq.com/openai/v1")
+    model_name = os.getenv("GROQ_MODEL", "qwen/qwen3.8-27b")
     
-    # Try live API first if key exists
+    # Try live Groq API first if key exists
     if api_key and not api_key.startswith("none"):
         try:
             from openai import OpenAI
             client = OpenAI(api_key=api_key, base_url=base_url)
             system_prompt = get_system_prompt()
             resp = client.chat.completions.create(
-                model="claude-sonnet-5-5",
+                model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_q}
@@ -141,7 +142,7 @@ def generate_query_hybrid(user_q: str, benchmark_items, preds_map):
                 temperature=0.0
             )
             raw = resp.choices[0].message.content or ""
-            return clean_sql(raw), "Live Cloud Inference (Claude 3.5 Sonnet)"
+            return clean_sql(raw), f"Live Groq LPU ({model_name})"
         except Exception:
             pass  # Fallback smoothly to local engine
 
