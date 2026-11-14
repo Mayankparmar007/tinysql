@@ -114,7 +114,7 @@ Start the local PostgreSQL 16 database using Docker Compose:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/tinysql.git
+git clone https://github.com/Mayankparmar007/tinysql.git
 cd tinysql
 
 # Start PostgreSQL 16
@@ -210,7 +210,7 @@ TinySQL enforces a multi-layer defense against query risks:
 *B.Tech Computer Science & Engineering (Specialization in Cloud Computing)*  
 *University of Petroleum and Energy Studies (UPES), Class of 2028*  
 - Portfolio: [Project 2 of 2: TinySQL & InferOps]
-- GitHub: [@your-username]
+- GitHub: [@Mayankparmar007](https://github.com/Mayankparmar007)
 
 ---
 
