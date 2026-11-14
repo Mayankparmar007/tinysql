@@ -2,6 +2,7 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
+[![Hugging Face Model](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-TinySQL--3B--Olist-ffcc00.svg)](https://huggingface.co/Mayank-0Par/tinysql-3b-olist)
 [![Base Model](https://img.shields.io/badge/Base_Model-Qwen2.5--3B--Instruct-792ee5.svg)](https://huggingface.co/Qwen/Qwen2.5-3B-Instruct)
 [![Fine-Tuning](https://img.shields.io/badge/Fine--Tuning-QLoRA_4bit-brightgreen.svg)](https://github.com/unslothai/unsloth)
 [![Execution Accuracy](https://img.shields.io/badge/Accuracy-86.7%25_(Self--Healing)-orange.svg)](RESULTS.md)
@@ -30,7 +31,8 @@ Evaluated against a live, 9-table PostgreSQL 16 database ([Brazilian E-Commerce 
 *\*Claude 3.5 Sonnet evaluated on dev split prior to API quota limit.*
 
 👉 **Read the full benchmark report:** [`RESULTS.md`](RESULTS.md)  
-👉 **Inspect model specifications:** [`MODEL_CARD.md`](MODEL_CARD.md)
+👉 **Inspect model specifications:** [`MODEL_CARD.md`](MODEL_CARD.md)  
+👉 **Live Hugging Face Weights & Adapter:** [huggingface.co/Mayank-0Par/tinysql-3b-olist](https://huggingface.co/Mayank-0Par/tinysql-3b-olist)
 
 ---
 
