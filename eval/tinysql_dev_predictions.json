@@ -1,0 +1,152 @@
+[
+  {
+    "id": 70,
+    "predicted_sql": "SELECT payment_type, SUM(payment_value) as total_payment_value FROM order_payments GROUP BY payment_type ORDER BY total_payment_value DESC;",
+    "gold_sql": "SELECT payment_type, SUM(payment_value) as total_val FROM order_payments GROUP BY payment_type ORDER BY total_val DESC;"
+  },
+  {
+    "id": 71,
+    "predicted_sql": "SELECT payment_type, COUNT(*) as cnt FROM order_payments GROUP BY payment_type ORDER BY cnt DESC;",
+    "gold_sql": "SELECT payment_type, COUNT(*) as txn_count FROM order_payments GROUP BY payment_type ORDER BY txn_count DESC;"
+  },
+  {
+    "id": 72,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews;"
+  },
+  {
+    "id": 73,
+    "predicted_sql": "SELECT AVG(r.review_score) FROM order_reviews r;",
+    "gold_sql": "SELECT AVG(review_score) FROM order_reviews;"
+  },
+  {
+    "id": 74,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 5;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 5;"
+  },
+  {
+    "id": 75,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 1;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 1;"
+  },
+  {
+    "id": 76,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 4;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 4;"
+  },
+  {
+    "id": 77,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 3;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 3;"
+  },
+  {
+    "id": 78,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 2;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 2;"
+  },
+  {
+    "id": 79,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_message IS NOT NULL;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_message IS NOT NULL;"
+  },
+  {
+    "id": 80,
+    "predicted_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_title IS NOT NULL;",
+    "gold_sql": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_title IS NOT NULL;"
+  },
+  {
+    "id": 81,
+    "predicted_sql": "SELECT review_score, COUNT(*) FROM order_reviews GROUP BY review_score;",
+    "gold_sql": "SELECT review_score, COUNT(*) as cnt FROM order_reviews GROUP BY review_score ORDER BY review_score DESC;"
+  },
+  {
+    "id": 82,
+    "predicted_sql": "SELECT COUNT(DISTINCT o.order_id) FROM orders o JOIN order_reviews r ON o.order_id = r.order_id;",
+    "gold_sql": "SELECT COUNT(DISTINCT order_id) FROM order_reviews;"
+  },
+  {
+    "id": 142,
+    "predicted_sql": "SELECT AVG(ov.payment_value) FROM order_payments ov JOIN orders o ON ov.order_id = o.order_id WHERE o.order_status = 'delivered' AND o.customer_state = 'SP';",
+    "gold_sql": "SELECT AVG(p.payment_value) FROM order_payments p JOIN orders o ON p.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'delivered' AND c.customer_state = 'SP';"
+  },
+  {
+    "id": 143,
+    "predicted_sql": "SELECT s.seller_id, SUM(oi.price) as rev FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' GROUP BY s.seller_id ORDER BY rev DESC LIMIT 3;",
+    "gold_sql": "SELECT seller_id, SUM(price) as total_rev FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status = 'delivered' GROUP BY seller_id ORDER BY total_rev DESC LIMIT 3;"
+  },
+  {
+    "id": 144,
+    "predicted_sql": "SELECT s.seller_id, COUNT(*) as cnt FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' GROUP BY s.seller_id ORDER BY cnt DESC LIMIT 3;",
+    "gold_sql": "SELECT seller_id, COUNT(*) as items_sold FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status = 'delivered' GROUP BY seller_id ORDER BY items_sold DESC LIMIT 3;"
+  },
+  {
+    "id": 145,
+    "predicted_sql": "SELECT AVG(r.review_score) as avg_review_score, p.product_category_name, s.seller_id, s.seller_zip_code_prefix, s.seller_city, s.seller_state FROM order_items oi JOIN products p ON oi.product_id = p.product_id JOIN order_reviews r ON oi.order_id = r.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE p.product_category_name = 'beauty' GROUP BY r.review_score, p.product_category_name, s.seller_id, s.seller_zip_code_prefix, s.seller_city, s.seller_state ORDER BY COUNT(*) DESC LIMIT 1;",
+    "gold_sql": "SELECT AVG(r.review_score) FROM order_reviews r JOIN order_items oi ON r.order_id = oi.order_id WHERE oi.seller_id = (SELECT seller_id FROM order_items GROUP BY seller_id ORDER BY COUNT(*) DESC LIMIT 1);"
+  },
+  {
+    "id": 146,
+    "predicted_sql": "SELECT COUNT(DISTINCT c.customer_id) FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE o.order_status = 'delivered' GROUP BY c.customer_id HAVING COUNT(o.order_id) > 1;",
+    "gold_sql": "SELECT COUNT(*) FROM (SELECT c.customer_unique_id FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE o.order_status = 'delivered' GROUP BY c.customer_unique_id HAVING COUNT(o.order_id) > 1) sub;"
+  },
+  {
+    "id": 147,
+    "predicted_sql": "SELECT MAX(COUNT(*)) FROM orders WHERE order_status = 'delivered' GROUP BY customer_unique_id ORDER BY 1 DESC LIMIT 1;",
+    "gold_sql": "SELECT MAX(order_count) FROM (SELECT COUNT(o.order_id) as order_count FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE o.order_status = 'delivered' GROUP BY c.customer_unique_id) sub;"
+  },
+  {
+    "id": 148,
+    "predicted_sql": "SELECT SUM(oi.price) FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'delivered' AND c.customer_id IN (SELECT customer_id FROM (SELECT customer_id, COUNT(*) as cnt FROM order_items GROUP BY customer_id HAVING cnt > 1) sub WHERE cnt > 1);",
+    "gold_sql": "SELECT SUM(oi.price) FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'delivered' AND c.customer_unique_id IN (SELECT c2.customer_unique_id FROM customers c2 JOIN orders o2 ON c2.customer_id = o2.customer_id WHERE o2.order_status = 'delivered' GROUP BY c2.customer_unique_id HAVING COUNT(o2.order_id) > 1);"
+  },
+  {
+    "id": 149,
+    "predicted_sql": "SELECT COUNT(*) FROM order_items WHERE order_status = 'delivered' AND order_item_id > 1;",
+    "gold_sql": "SELECT COUNT(*) FROM (SELECT order_id FROM order_items GROUP BY order_id HAVING COUNT(*) > 1) oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status = 'delivered';"
+  },
+  {
+    "id": 174,
+    "predicted_sql": "SELECT s.seller_id, r.rank, SUM(oi.price) as net_revenue FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' AND s.seller_state = 'SP' GROUP BY s.seller_id, r ORDER BY net_revenue DESC;",
+    "gold_sql": "SELECT s.seller_id, SUM(oi.price) as rev, RANK() OVER (ORDER BY SUM(oi.price) DESC) as seller_rank FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' AND s.seller_state = 'SP' GROUP BY s.seller_id LIMIT 5;"
+  },
+  {
+    "id": 175,
+    "predicted_sql": "SELECT product_category_name, product_name_lenght, ROW_NUMBER() OVER (ORDER BY product_name_lenght DESC) as rn FROM products WHERE product_category_name IS NOT NULL GROUP BY product_category_name ORDER BY product_name_lenght DESC LIMIT 1;",
+    "gold_sql": "SELECT product_category_name, product_id, product_weight_g FROM (SELECT product_category_name, product_id, product_weight_g, ROW_NUMBER() OVER (PARTITION BY product_category_name ORDER BY product_weight_g DESC) as rn FROM products WHERE product_category_name IS NOT NULL AND product_weight_g IS NOT NULL) sub WHERE rn = 1 ORDER BY product_weight_g DESC LIMIT 5;"
+  },
+  {
+    "id": 176,
+    "predicted_sql": "REFUSE",
+    "gold_sql": "SELECT s.seller_id, COUNT(*) as item_cnt, DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) as rnk FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' AND s.seller_state = 'MG' GROUP BY s.seller_id LIMIT 5;"
+  },
+  {
+    "id": 198,
+    "predicted_sql": "SELECT COUNT(*) FROM orders WHERE order_purchase_timestamp >= DATE_TRUNC('week', order_purchase_timestamp) + INTERVAL '6 days' AND order_purchase_timestamp < DATE_TRUNC('week', order_purchase_timestamp) + INTERVAL '7 days';",
+    "gold_sql": "SELECT COUNT(*) FROM orders WHERE EXTRACT(DOW FROM order_purchase_timestamp) IN (0, 6);"
+  },
+  {
+    "id": 199,
+    "predicted_sql": "SELECT COUNT(*) FROM orders WHERE order_purchase_timestamp >= EXTRACT(DOW FROM order_purchase_timestamp) AND order_purchase_timestamp < order_purchase_timestamp + INTERVAL '7 days';",
+    "gold_sql": "SELECT COUNT(*) FROM orders WHERE EXTRACT(DOW FROM order_purchase_timestamp) BETWEEN 1 AND 5;"
+  },
+  {
+    "id": 200,
+    "predicted_sql": "SELECT EXTRACT(YEAR FROM order_purchase_timestamp) as year, COUNT(*) as delivered_orders_count FROM orders WHERE order_status = 'delivered' GROUP BY year ORDER BY year;",
+    "gold_sql": "SELECT EXTRACT(YEAR FROM order_purchase_timestamp)::int as yr, COUNT(*) as cnt FROM orders WHERE order_status = 'delivered' GROUP BY yr ORDER BY yr;"
+  },
+  {
+    "id": 222,
+    "predicted_sql": "REFUSE",
+    "gold_sql": "REFUSE"
+  },
+  {
+    "id": 223,
+    "predicted_sql": "REFUSE",
+    "gold_sql": "REFUSE"
+  },
+  {
+    "id": 224,
+    "predicted_sql": "REFUSE",
+    "gold_sql": "REFUSE"
+  }
+]

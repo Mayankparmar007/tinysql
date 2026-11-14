@@ -1,0 +1,182 @@
+[
+  {
+    "id": 70,
+    "status": "PASS",
+    "predicted": "SELECT payment_type, SUM(payment_value) AS total_payment_value FROM order_payments GROUP BY payment_type",
+    "gold": "SELECT payment_type, SUM(payment_value) as total_val FROM order_payments GROUP BY payment_type ORDER BY total_val DESC;"
+  },
+  {
+    "id": 71,
+    "status": "PASS",
+    "predicted": "SELECT payment_type, COUNT(*) AS transaction_count FROM order_payments GROUP BY payment_type ORDER BY transaction_count DESC;",
+    "gold": "SELECT payment_type, COUNT(*) as txn_count FROM order_payments GROUP BY payment_type ORDER BY txn_count DESC;"
+  },
+  {
+    "id": 72,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(*) FROM order_reviews;",
+    "gold": "SELECT COUNT(*) FROM order_reviews;"
+  },
+  {
+    "id": 73,
+    "status": "PASS",
+    "predicted": "SELECT AVG(review_score) FROM order_reviews",
+    "gold": "SELECT AVG(review_score) FROM order_reviews;"
+  },
+  {
+    "id": 74,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 5;",
+    "gold": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 5;"
+  },
+  {
+    "id": 75,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 1;",
+    "gold": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 1;"
+  },
+  {
+    "id": 76,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 4",
+    "gold": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 4;"
+  },
+  {
+    "id": 77,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 3",
+    "gold": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 3;"
+  },
+  {
+    "id": 78,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 2;",
+    "gold": "SELECT COUNT(*) FROM order_reviews WHERE review_score = 2;"
+  },
+  {
+    "id": 79,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_message IS NOT NULL AND review_comment_message <> '';",
+    "gold": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_message IS NOT NULL;"
+  },
+  {
+    "id": 80,
+    "status": "FAIL (Result Mismatch)",
+    "predicted": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_title IS NOT NULL AND TRIM(review_comment_title) <> '';",
+    "gold": "SELECT COUNT(*) FROM order_reviews WHERE review_comment_title IS NOT NULL;"
+  },
+  {
+    "id": 81,
+    "status": "PASS",
+    "predicted": "SELECT review_score, COUNT(*) AS review_count FROM order_reviews GROUP BY review_score ORDER BY review_score",
+    "gold": "SELECT review_score, COUNT(*) as cnt FROM order_reviews GROUP BY review_score ORDER BY review_score DESC;"
+  },
+  {
+    "id": 82,
+    "status": "PASS",
+    "predicted": "SELECT COUNT(DISTINCT order_id) FROM order_reviews",
+    "gold": "SELECT COUNT(DISTINCT order_id) FROM order_reviews;"
+  },
+  {
+    "id": 142,
+    "status": "PASS",
+    "predicted": "SELECT AVG(op.payment_value) AS avg_payment_value\nFROM orders o\nJOIN customers c ON o.customer_id = c.customer_id\nJOIN order_payments op ON o.order_id = op.order_id\nWHERE o.order_status = 'delivered'\n  AND c.customer_state = 'SP';",
+    "gold": "SELECT AVG(p.payment_value) FROM order_payments p JOIN orders o ON p.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'delivered' AND c.customer_state = 'SP';"
+  },
+  {
+    "id": 143,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT seller_id, SUM(price) as total_rev FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status = 'delivered' GROUP BY seller_id ORDER BY total_rev DESC LIMIT 3;"
+  },
+  {
+    "id": 144,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT seller_id, COUNT(*) as items_sold FROM order_items oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status = 'delivered' GROUP BY seller_id ORDER BY items_sold DESC LIMIT 3;"
+  },
+  {
+    "id": 145,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT AVG(r.review_score) FROM order_reviews r JOIN order_items oi ON r.order_id = oi.order_id WHERE oi.seller_id = (SELECT seller_id FROM order_items GROUP BY seller_id ORDER BY COUNT(*) DESC LIMIT 1);"
+  },
+  {
+    "id": 146,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT COUNT(*) FROM (SELECT c.customer_unique_id FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE o.order_status = 'delivered' GROUP BY c.customer_unique_id HAVING COUNT(o.order_id) > 1) sub;"
+  },
+  {
+    "id": 147,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT MAX(order_count) FROM (SELECT COUNT(o.order_id) as order_count FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE o.order_status = 'delivered' GROUP BY c.customer_unique_id) sub;"
+  },
+  {
+    "id": 148,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT SUM(oi.price) FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN customers c ON o.customer_id = c.customer_id WHERE o.order_status = 'delivered' AND c.customer_unique_id IN (SELECT c2.customer_unique_id FROM customers c2 JOIN orders o2 ON c2.customer_id = o2.customer_id WHERE o2.order_status = 'delivered' GROUP BY c2.customer_unique_id HAVING COUNT(o2.order_id) > 1);"
+  },
+  {
+    "id": 149,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT COUNT(*) FROM (SELECT order_id FROM order_items GROUP BY order_id HAVING COUNT(*) > 1) oi JOIN orders o ON oi.order_id = o.order_id WHERE o.order_status = 'delivered';"
+  },
+  {
+    "id": 174,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT s.seller_id, SUM(oi.price) as rev, RANK() OVER (ORDER BY SUM(oi.price) DESC) as seller_rank FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' AND s.seller_state = 'SP' GROUP BY s.seller_id LIMIT 5;"
+  },
+  {
+    "id": 175,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT product_category_name, product_id, product_weight_g FROM (SELECT product_category_name, product_id, product_weight_g, ROW_NUMBER() OVER (PARTITION BY product_category_name ORDER BY product_weight_g DESC) as rn FROM products WHERE product_category_name IS NOT NULL AND product_weight_g IS NOT NULL) sub WHERE rn = 1 ORDER BY product_weight_g DESC LIMIT 5;"
+  },
+  {
+    "id": 176,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT s.seller_id, COUNT(*) as item_cnt, DENSE_RANK() OVER (ORDER BY COUNT(*) DESC) as rnk FROM order_items oi JOIN orders o ON oi.order_id = o.order_id JOIN sellers s ON oi.seller_id = s.seller_id WHERE o.order_status = 'delivered' AND s.seller_state = 'MG' GROUP BY s.seller_id LIMIT 5;"
+  },
+  {
+    "id": 198,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT COUNT(*) FROM orders WHERE EXTRACT(DOW FROM order_purchase_timestamp) IN (0, 6);"
+  },
+  {
+    "id": 199,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT COUNT(*) FROM orders WHERE EXTRACT(DOW FROM order_purchase_timestamp) BETWEEN 1 AND 5;"
+  },
+  {
+    "id": 200,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "SELECT EXTRACT(YEAR FROM order_purchase_timestamp)::int as yr, COUNT(*) as cnt FROM orders WHERE order_status = 'delivered' GROUP BY yr ORDER BY yr;"
+  },
+  {
+    "id": 222,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "REFUSE"
+  },
+  {
+    "id": 223,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "REFUSE"
+  },
+  {
+    "id": 224,
+    "status": "FAIL (API Error)",
+    "predicted": "",
+    "gold": "REFUSE"
+  }
+]

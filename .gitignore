@@ -10,9 +10,20 @@ __pycache__/
 
 # Data & Raw CSVs
 data/raw/
-*.csv
 *.tar.gz
 *.zip
+data/raw/*.csv
+!eval/*.csv
+
+# Model weights & Adapters (Store locally or HuggingFace Hub, do not push to git)
+*.safetensors
+*.pt
+*.pth
+*.bin
+checkpoint-*/
+train/tinysql_adapter/
+tinysql_adapter/
+tinysql_merged_fp16/
 
 # Docker & Database
 postgres_data/

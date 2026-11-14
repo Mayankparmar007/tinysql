@@ -18,12 +18,13 @@ DB_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:543
 db_url_clean = DB_URL.replace("postgresql+psycopg2://", "postgresql://")
 
 DEV_FILE = os.path.join(BASE_DIR, "train", "dev.jsonl")
+MODEL_NAME = "claude-sonnet-5-5"
+BASE_URL = "https://freemodel.in/v1"
 
 FORBIDDEN_KEYWORDS = ["DROP", "DELETE", "UPDATE", "INSERT", "ALTER", "TRUNCATE", "GRANT", "REVOKE"]
 
 def clean_sql(raw_output: str) -> str:
     cleaned = raw_output.strip()
-    # Strip markdown if model added it
     if cleaned.startswith("```"):
         cleaned = re.sub(r"^```(?:sql)?\n?", "", cleaned, flags=re.IGNORECASE)
         cleaned = re.sub(r"\n?```$", "", cleaned)
@@ -32,22 +33,19 @@ def clean_sql(raw_output: str) -> str:
 def is_safe_sql(sql: str) -> bool:
     upper = sql.upper()
     for kw in FORBIDDEN_KEYWORDS:
-        # Match as standalone word
         if re.search(r'\b' + kw + r'\b', upper):
             return False
     return True
 
-def run_dev_baseline(model_name="gpt-4o-mini", api_base=None, api_key=None):
+def run_dev_baseline():
+    api_key = os.getenv("OPENAI_API_KEY", "").strip()
     if not api_key:
-        api_key = os.getenv("OPENAI_API_KEY")
-
-    if not api_key and not api_base:
-        print("[ERROR] No OPENAI_API_KEY found in .env! Please set OPENAI_API_KEY in .env to run gpt-4o-mini.")
+        print("[ERROR] No OPENAI_API_KEY found in .env!")
         return
 
     client = OpenAI(
-        api_key=api_key or "dummy-key",
-        base_url=api_base
+        api_key=api_key,
+        base_url=BASE_URL
     )
 
     conn = psycopg2.connect(db_url_clean)
@@ -57,7 +55,8 @@ def run_dev_baseline(model_name="gpt-4o-mini", api_base=None, api_key=None):
         dev_items = [json.loads(line) for line in f]
 
     print(f"\n=======================================================")
-    print(f"Running Baseline on {len(dev_items)} Dev Questions with: {model_name}")
+    print(f"Running Baseline on {len(dev_items)} Dev Questions with: {MODEL_NAME}")
+    print(f"Endpoint: {BASE_URL}")
     print(f"=======================================================\n")
 
     correct = 0
@@ -65,31 +64,46 @@ def run_dev_baseline(model_name="gpt-4o-mini", api_base=None, api_key=None):
     unsafe_count = 0
     syntax_errors = 0
     latencies = []
-
     results = []
 
     for idx, item in enumerate(dev_items):
         q_id = item["id"]
         messages = item["messages"]
+        system_p = messages[0]["content"]
         user_q = messages[1]["content"]
         gold_sql = messages[2]["content"].strip()
         expected_refusal = (gold_sql == "REFUSE")
 
         t0 = time.time()
-        try:
-            resp = client.chat.completions.create(
-                model=model_name,
-                messages=[
-                    {"role": "system", "content": messages[0]["content"]},
-                    {"role": "user", "content": user_q}
-                ],
-                temperature=0.0
-            )
-            raw_content = resp.choices[0].message.content or ""
-            latency_ms = (time.time() - t0) * 1000
-            latencies.append(latency_ms)
-        except Exception as e:
-            print(f"[{idx+1}/{len(dev_items)}] API Error on Q{q_id}: {e}")
+        raw_content = ""
+        latency_ms = 0.0
+        success = False
+        max_retries = 3
+
+        for attempt in range(max_retries):
+            try:
+                resp = client.chat.completions.create(
+                    model=MODEL_NAME,
+                    messages=[
+                        {"role": "system", "content": system_p},
+                        {"role": "user", "content": user_q}
+                    ],
+                    temperature=0.0
+                )
+                raw_content = resp.choices[0].message.content or ""
+                latency_ms = (time.time() - t0) * 1000
+                latencies.append(latency_ms)
+                success = True
+                break
+            except Exception as e:
+                err_str = str(e)
+                if attempt == max_retries - 1:
+                    print(f"[{idx+1}/{len(dev_items)}] API Error on Q{q_id}: {e}")
+                else:
+                    time.sleep(2)
+
+        if not success or not raw_content:
+            results.append({"id": q_id, "status": "FAIL (API Error)", "predicted": "", "gold": gold_sql})
             continue
 
         predicted = clean_sql(raw_content)
@@ -97,7 +111,7 @@ def run_dev_baseline(model_name="gpt-4o-mini", api_base=None, api_key=None):
         # 1. Safety check
         if not is_safe_sql(predicted):
             unsafe_count += 1
-            print(f"[{idx+1}/{len(dev_items)}] Q{q_id} UNSAFE SQL REJECTED: {predicted}")
+            print(f"[{idx+1}/{len(dev_items)}] Q{q_id}: FAIL (Unsafe SQL Rejected)")
             continue
 
         # 2. Refusal check
@@ -113,13 +127,12 @@ def run_dev_baseline(model_name="gpt-4o-mini", api_base=None, api_key=None):
             continue
 
         if expected_refusal:
-            # Model generated SQL when it should have refused
             status = "FAIL (Failed to Refuse)"
             results.append({"id": q_id, "status": status, "predicted": predicted, "gold": gold_sql})
             print(f"[{idx+1}/{len(dev_items)}] Q{q_id}: {status} ({latency_ms:.0f}ms)")
             continue
 
-        # 3. Execution accuracy check
+        # 3. Execution check on PostgreSQL
         try:
             pred_hash, pred_rows = get_deterministic_hash(cur, predicted)
             gold_hash, gold_rows = get_deterministic_hash(cur, gold_sql)
@@ -145,7 +158,7 @@ def run_dev_baseline(model_name="gpt-4o-mini", api_base=None, api_key=None):
     p95_latency = sorted(latencies)[int(len(latencies)*0.95)] if latencies else 0
 
     print(f"\n-------------------------------------------------------")
-    print(f"BASELINE RESULTS FOR: {model_name}")
+    print(f"BASELINE RESULTS FOR: {MODEL_NAME}")
     print(f"-------------------------------------------------------")
     print(f"Execution Accuracy : {accuracy:.1f}% ({correct}/{len(dev_items)})")
     print(f"Syntax/Exec Errors : {syntax_errors}")
@@ -154,13 +167,12 @@ def run_dev_baseline(model_name="gpt-4o-mini", api_base=None, api_key=None):
     print(f"p95 Latency        : {p95_latency:.0f} ms")
     print(f"-------------------------------------------------------\n")
 
+    out_json = os.path.join(BASE_DIR, "eval", "baseline_sonnet_dev.json")
+    with open(out_json, "w", encoding="utf-8") as f:
+        json.dump(results, f, indent=2)
+    print(f"Saved detailed question-by-question breakdown to {out_json}")
+
     return results
 
 if __name__ == "__main__":
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default="gpt-4o-mini", help="Model name")
-    parser.add_argument("--api-base", default=None, help="Custom API base url")
-    args = parser.parse_args()
-
-    run_dev_baseline(model_name=args.model, api_base=args.api_base)
+    run_dev_baseline()
