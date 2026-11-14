@@ -189,7 +189,7 @@ with st.sidebar:
 
 # --- MAIN PAGE ---
 st.title("TinySQL: Natural Language Business Intelligence")
-st.markdown("Ask natural language questions across the **1.5M-row Brazilian E-Commerce database**. TinySQL generates PostgreSQL queries with an **agentic compiler self-healing loop**.")
+st.markdown("Ask natural language questions across your **enterprise e-commerce database (1.5M+ records, 9 tables)**. TinySQL generates PostgreSQL queries with an **agentic compiler self-healing loop**.")
 
 benchmark_items, preds_map = load_verified_benchmark()
 
